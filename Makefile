@@ -4,19 +4,20 @@ include .env
 # SERVER_ID: .env内で定義
 
 # 問題によって変わる変数
-BIN_NAME:=isucondition
-
 USER:=isucon
-
+BIN_NAME:=isucondition
+BUILD_DIR:=/home/isucon/webapp/go
+SERVICE_NAME:=$(BIN_NAME).go.service
 
 DB_PATH:=/etc/mysql
 NGINX_PATH:=/etc/nginx
 SYSTEMD_PATH:=/etc/systemd/system
 
-SERVICE_FILE_NAME:=$(BIN_NAME).go.service
+NGINX_LOG:=/var/log/nginx/access.log
+DB_SLOW_LOG:=/var/log/mysql/mysql-slow.log
 
 
-# 実際に呼び出すコマンド ------------------------
+# メインで使うコマンド ------------------------
 
 # サーバーの環境構築　ツールのインストール、gitまわりのセットアップ
 .PHONY: setup
@@ -30,6 +31,9 @@ get-conf: check-server-id get-db-conf get-nginx-conf get-service-file get-envsh
 .PHONY: deploy-conf
 deploy-conf: check-server-id deploy-db-conf deploy-nginx-conf deploy-service-file deploy-envsh
 
+# ベンチマークを走らせる直前に実行する
+.PHONY: bench
+bench: check-server-id mv-logs build deploy-conf restart watch-service-log
 
 # 主要コマンドの構成要素 ------------------------
 
@@ -89,9 +93,9 @@ get-nginx-conf:
 
 .PHONY: get-service-file
 get-service-file:
-	sudo cp $(SYSTEMD_PATH)/$(SERVICE_FILE_NAME) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_FILE_NAME)
-	sudo chown $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_FILE_NAME)
-	sudo chgrap $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_FILE_NAME)
+	sudo cp $(SYSTEMD_PATH)/$(SERVICE_NAME) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
+	sudo chown $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
+	sudo chgrap $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
 
 .PHONY: get-envsh
 get-envsh:
@@ -107,8 +111,34 @@ deploy-nginx-conf:
 
 .PHONY: deploy-service-file
 deploy-service-file:
-	cp ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_FILE_NAME) $(SYSTEMD_PATH)/$(SERVICE_FILE_NAME)
+	cp ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME) $(SYSTEMD_PATH)/$(SERVICE_NAME)
 
 .PHONY: deploy-envsh
 deploy-envsh:
 	cp ~/$(SERVER_ID)/home/isucon/env.sh ~/env.sh
+
+.PHONY: build
+build:
+	cd $(BUILD_DIR); \
+	go build -o $(BIN_NAME)
+
+.PHONY: restart
+restart:
+	sudo restart $(SERVICE_NAME)
+	sudo systemctl restart mysql
+	sudo systemctl restart nginx
+
+.PHONY: mv-logs
+mv-logs:
+	$(eval when := $(shell date "+%s"))
+	mkdir -p ~/logs/$(when)
+	@if [ -f $(NGINX_LOG) ]; then \
+		sudo mv -f $(NGINX_LOG) ~/logs/nginx/$(when)/ ; \
+	fi
+	@if [ -f $(DB_SLOW_LOG) ]; then \
+		sudo mv -f $(DB_SLOW_LOG) ~/logs/mysql/$(when)/ ; \
+	fi
+
+.PHONY: watch-service-log
+watch-service-log:
+	sudo journalctl -u $(SERVICE_NAME) -n10 -f
