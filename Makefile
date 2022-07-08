@@ -67,7 +67,7 @@ access-db:
 install-tools:
 	sudo apt update
 	sudo apt upgrade
-	sudo apt install -y percona-toolkit dstat git unzip snapd graphviz tree
+	sudo apt install -y percona-toolkit dstat git unzip snapd graphviz tree ssh-keygen
 
 	# alpのインストール
 	wget https://github.com/tkuchiki/alp/releases/download/v1.0.9/alp_linux_amd64.zip
@@ -82,7 +82,7 @@ git-setup:
 	git config --global user.name "isucon"
 
 	# deploykeyの作成
-	ssh-keygen -f ~/.ssh/deploykey -t ed25519
+	ssh-keygen -t ed25519
 
 .PHONY: check-server-id
 check-server-id:
@@ -109,19 +109,16 @@ set-as-s3:
 get-db-conf:
 	sudo cp -R $(DB_PATH)/* ~/$(SERVER_ID)/etc/mysql
 	sudo chown $(USER) -R ~/$(SERVER_ID)/etc/mysql
-	# sudo chgrp $(USER) -R ~/$(SERVER_ID)/etc/mysql
 
 .PHONY: get-nginx-conf
 get-nginx-conf:
 	sudo cp -R $(NGINX_PATH)/* ~/$(SERVER_ID)/etc/nginx
 	sudo chown $(USER) -R ~/$(SERVER_ID)/etc/nginx
-	# sudo chgrp $(USER) -R ~/$(SERVER_ID)/etc/nginx
 
 .PHONY: get-service-file
 get-service-file:
 	sudo cp $(SYSTEMD_PATH)/$(SERVICE_NAME) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
 	sudo chown $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
-	# sudo chgrp $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
 
 .PHONY: get-envsh
 get-envsh:
