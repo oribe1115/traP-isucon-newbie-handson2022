@@ -1,24 +1,37 @@
 include .env
+# 変数定義 ------------------------
+
 # SERVER_ID: .env内で定義
 
+# 問題によって変わる変数
+BIN_NAME:=isucondition
+
 USER:=isucon
+
+
 DB_PATH:=/etc/mysql
 NGINX_PATH:=/etc/nginx
+SYSTEMD_PATH:=/etc/systemd/system
 
-# 変数定義
+SERVICE_FILE_NAME:=$(BIN_NAME).go.service
 
-# 実際に呼び出すコマンド
+
+# 実際に呼び出すコマンド ------------------------
+
+# サーバーの環境構築　ツールのインストール、gitまわりのセットアップ
 .PHONY: setup
 setup: install-tools git-setup
 
+# 設定ファイルなどを取得してgit管理下に配置する
 .PHONY: get-conf
-get-conf: check-server-id get-db-conf get-nginx-conf get-envsh
+get-conf: check-server-id get-db-conf get-nginx-conf get-service-file get-envsh
 
+# リポジトリ内の設定ファイルをそれぞれ配置する
 .PHONY: deploy-conf
-deploy-conf: check-server-id deploy-db-conf deploy-nginx-conf deploy-envsh
+deploy-conf: check-server-id deploy-db-conf deploy-nginx-conf deploy-service-file deploy-envsh
 
-# ------------------------
-# 主要コマンドの構成要素
+
+# 主要コマンドの構成要素 ------------------------
 
 .PHONY: install-tools
 install-tools:
@@ -74,6 +87,12 @@ get-nginx-conf:
 	sudo chown $(USER) -R ~/$(SERVER_ID)/etc/nginx
 	sudo chgrap $(USER) -R ~/$(SERVER_ID)/etc/nginx
 
+.PHONY: get-service-file
+get-service-file:
+	sudo cp $(SYSTEMD_PATH)/$(SERVICE_FILE_NAME) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_FILE_NAME)
+	sudo chown $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_FILE_NAME)
+	sudo chgrap $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_FILE_NAME)
+
 .PHONY: get-envsh
 get-envsh:
 	cp ~/env.sh ~/$(SERVER_ID)/home/isucon/env.sh
@@ -85,6 +104,10 @@ deploy-db-conf:
 .PHONY: deploy-nginx-conf
 deploy-nginx-conf:
 	sudo cp -R ~/$(SERVER_ID)/etc/nginx/* $(NGINX_PATH)
+
+.PHONY: deploy-service-file
+deploy-service-file:
+	cp ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_FILE_NAME) $(SYSTEMD_PATH)/$(SERVICE_FILE_NAME)
 
 .PHONY: deploy-envsh
 deploy-envsh:
