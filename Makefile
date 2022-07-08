@@ -35,6 +35,27 @@ deploy-conf: check-server-id deploy-db-conf deploy-nginx-conf deploy-service-fil
 .PHONY: bench
 bench: check-server-id mv-logs build deploy-conf restart watch-service-log
 
+# slow queryを確認する
+.PHONY: slow-query
+slow-query:
+	sudo pt-query-digest $(DB_SLOW_LOG)
+
+# alpでアクセスログを確認する
+.PHONY: alp
+alp:
+	# TODO
+
+# pprofで記録する
+.PHONY: pprof-record
+pprof-record:
+	# TODO
+
+# pprofで確認する
+.PHONY: pprof-check
+pprof-check:
+	# TODO
+
+
 # 主要コマンドの構成要素 ------------------------
 
 .PHONY: install-tools
