@@ -43,7 +43,7 @@ slow-query:
 # alpでアクセスログを確認する
 .PHONY: alp
 alp:
-	# TODO
+	alp ltsv --file=$(NGINX_LOG) --config=~/tool-config/alp/config.yml
 
 # pprofで記録する
 .PHONY: pprof-record
