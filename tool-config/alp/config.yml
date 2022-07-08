@@ -4,7 +4,19 @@ reverse: true                   # boolean
 query_string: true              # boolean
 output: count,5xx,method,uri,min,max,sum,avg,p99                    # string(comma separated)
 
-# matching_groups:            # array
+matching_groups:            # array
+  - /api/isu/.+/icon
+  - /api/isu/.+/graph
+  - /api/isu/.+/condition
+  - /api/isu/[-a-z0-9]+
+  - /api/condition/[-a-z0-9]+
+  - /api/catalog/.+
+
+  - /isu/.+/graph
+  - /isu/.+/condition
+  - /isu/[-a-z0-9]+
+
+  - \?jwt
 
 
 # file:                       # string

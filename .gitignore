@@ -1,4 +1,26 @@
-.env
 .vscode
 
-logs/*
+.*
+!.gitignore
+bench
+local
+go
+
+!webapp/go
+
+# 使わない言語
+webapp/frontend
+webapp/nodejs
+webapp/perl
+webapp/php
+webapp/python
+webapp/ruby
+webapp/rust
+
+env.sh
+!s1/home/isucon/env.sh
+!s2/home/isucon/env.sh
+!s3/home/isucon/env.sh
+
+logs
+pprof

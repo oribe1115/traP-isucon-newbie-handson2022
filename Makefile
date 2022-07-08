@@ -14,7 +14,7 @@ NGINX_PATH:=/etc/nginx
 SYSTEMD_PATH:=/etc/systemd/system
 
 NGINX_LOG:=/var/log/nginx/access.log
-DB_SLOW_LOG:=/var/log/mysql/mysql-slow.log
+DB_SLOW_LOG:=/var/log/mysql/mariadb-slow.log
 
 
 # メインで使うコマンド ------------------------
@@ -43,7 +43,7 @@ slow-query:
 # alpでアクセスログを確認する
 .PHONY: alp
 alp:
-	alp ltsv --file=$(NGINX_LOG) --config=~/tool-config/alp/config.yml
+	sudo alp ltsv --file=$(NGINX_LOG) --config=/home/isucon/tool-config/alp/config.yml
 
 # pprofで記録する
 .PHONY: pprof-record
@@ -53,8 +53,13 @@ pprof-record:
 # pprofで確認する
 .PHONY: pprof-check
 pprof-check:
-	# TODO
+	$(eval latest := $(shell ls -rt pprof/ | tail -n 1))
+	go tool pprof -http=localhost:8090 pprof/$(latest)
 
+# DBに接続する
+.PHONY: access-db
+access-db:
+	mysql -h $(MYSQL_HOST) -P $(MYSQL_PORT) -u $(MYSQL_USER) -p$(MYSQL_PASS) $(MYSQL_DBNAME)
 
 # 主要コマンドの構成要素 ------------------------
 
@@ -81,12 +86,12 @@ git-setup:
 
 .PHONY: check-server-id
 check-server-id:
-	ifdef SERVER_ID
-		@echo "SERVER_ID=$(SERVER_ID)"
-	else
-		@echo "SERVER_ID is unset"
-		@exit 1
-	endif
+ifdef SERVER_ID
+	@echo "SERVER_ID=$(SERVER_ID)"
+else
+	@echo "SERVER_ID is unset"
+	@exit 1
+endif
 
 .PHONY: set-as-s1
 set-as-s1:
@@ -132,7 +137,7 @@ deploy-nginx-conf:
 
 .PHONY: deploy-service-file
 deploy-service-file:
-	cp ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME) $(SYSTEMD_PATH)/$(SERVICE_NAME)
+	sudo cp ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME) $(SYSTEMD_PATH)/$(SERVICE_NAME)
 
 .PHONY: deploy-envsh
 deploy-envsh:
@@ -145,7 +150,8 @@ build:
 
 .PHONY: restart
 restart:
-	sudo restart $(SERVICE_NAME)
+	sudo systemctl daemon-reload
+	sudo systemctl restart $(SERVICE_NAME)
 	sudo systemctl restart mysql
 	sudo systemctl restart nginx
 
@@ -153,12 +159,13 @@ restart:
 mv-logs:
 	$(eval when := $(shell date "+%s"))
 	mkdir -p ~/logs/$(when)
-	@if [ -f $(NGINX_LOG) ]; then \
-		sudo mv -f $(NGINX_LOG) ~/logs/nginx/$(when)/ ; \
-	fi
-	@if [ -f $(DB_SLOW_LOG) ]; then \
-		sudo mv -f $(DB_SLOW_LOG) ~/logs/mysql/$(when)/ ; \
-	fi
+ifeq ("$(wildcard $(NGINX_LOG))", "")
+	sudo mv -f $(NGINX_LOG) ~/logs/nginx/$(when)/
+endif
+ifeq ("$(wildcard $(DB_SLOW_LOG)))", "")
+	sudo mv -f $(DB_SLOW_LOG) ~/logs/mysql/$(when)/
+endif
+
 
 .PHONY: watch-service-log
 watch-service-log:
