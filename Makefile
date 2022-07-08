@@ -48,7 +48,7 @@ alp:
 # pprofで記録する
 .PHONY: pprof-record
 pprof-record:
-	# TODO
+	go tool pprof http://localhost:6060/debug/pprof/profile
 
 # pprofで確認する
 .PHONY: pprof-check
