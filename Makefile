@@ -1,7 +1,7 @@
 include env.sh
 # 変数定義 ------------------------
 
-# SERVER_ID: .env内で定義
+# SERVER_ID: env.sh内で定義
 
 # 問題によって変わる変数
 USER:=isucon
