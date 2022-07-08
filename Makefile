@@ -104,19 +104,19 @@ set-as-s3:
 get-db-conf:
 	sudo cp -R $(DB_PATH)/* ~/$(SERVER_ID)/etc/mysql
 	sudo chown $(USER) -R ~/$(SERVER_ID)/etc/mysql
-	sudo chgrap $(USER) -R ~/$(SERVER_ID)/etc/mysql
+	# sudo chgrp $(USER) -R ~/$(SERVER_ID)/etc/mysql
 
 .PHONY: get-nginx-conf
 get-nginx-conf:
 	sudo cp -R $(NGINX_PATH)/* ~/$(SERVER_ID)/etc/nginx
 	sudo chown $(USER) -R ~/$(SERVER_ID)/etc/nginx
-	sudo chgrap $(USER) -R ~/$(SERVER_ID)/etc/nginx
+	# sudo chgrp $(USER) -R ~/$(SERVER_ID)/etc/nginx
 
 .PHONY: get-service-file
 get-service-file:
 	sudo cp $(SYSTEMD_PATH)/$(SERVICE_NAME) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
 	sudo chown $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
-	sudo chgrap $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
+	# sudo chgrp $(USER) ~/$(SERVER_ID)/etc/systemd/system/$(SERVICE_NAME)
 
 .PHONY: get-envsh
 get-envsh:
