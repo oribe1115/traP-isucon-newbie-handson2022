@@ -1,4 +1,4 @@
-include .env
+include env.sh
 # 変数定義 ------------------------
 
 # SERVER_ID: .env内で定義
@@ -62,13 +62,13 @@ pprof-check:
 install-tools:
 	sudo apt update
 	sudo apt upgrade
-	sudo apt install -y percona-toolkit dstat git unzip snapd graphviz tree ssh-keygen
+	sudo apt install -y percona-toolkit dstat git unzip snapd graphviz tree
 
 	# alpのインストール
 	wget https://github.com/tkuchiki/alp/releases/download/v1.0.9/alp_linux_amd64.zip
-    unzip alp_linux_amd64.zip
-    sudo install alp /usr/local/bin/alp
-    rm alp_linux_amd64.zip alp
+	unzip alp_linux_amd64.zip
+	sudo install alp /usr/local/bin/alp
+	rm alp_linux_amd64.zip alp
 
 .PHONY: git-setup
 git-setup:
@@ -90,15 +90,15 @@ check-server-id:
 
 .PHONY: set-as-s1
 set-as-s1:
-	echo "SERVER_ID=s1" >> .env
+	echo "SERVER_ID=s1" >> env.sh
 
 .PHONY: set-as-s2
 set-as-s2:
-	echo "SERVER_ID=s2" >> .env
+	echo "SERVER_ID=s2" >> env.sh
 
 .PHONY: set-as-s3
 set-as-s3:
-	echo "SERVER_ID=s3" >> .env
+	echo "SERVER_ID=s3" >> env.sh
 
 .PHONY: get-db-conf
 get-db-conf:
